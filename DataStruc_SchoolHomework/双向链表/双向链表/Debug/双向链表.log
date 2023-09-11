@@ -1,0 +1,4 @@
+﻿  源.cpp
+C:\Users\93247\Desktop\数据结构\双向链表\双向链表\源.cpp(19,1): warning C4326: “main”的返回类型应为“int”而非“void”
+C:\Users\93247\Desktop\数据结构\双向链表\双向链表\源.cpp(16): warning C4715: “IsPrime”: 不是所有的控件路径都返回值
+  双向链表.vcxproj -> C:\Users\93247\Desktop\数据结构\双向链表\Debug\双向链表.exe
