@@ -67,16 +67,9 @@ Date& operator=(const Date& d)
 
 Date& operator+=(int day)
 {
-    int days[13] = {0, 31, 28, 31, 30, 31, 30 , 31, 31, 30, 31, 30 ,31};
     for(int i = 0; i < day; i++)
     {
-        if(_year % 4 == 0 && _year % 100 != 0)
-        {
-            days[2] = 29;
-        }
-        else 
-            days[2] = 28;
-        if(_day % days[_month] == 0)
+        if(_day % GetMonthDay(_year, _month) == 0)
         {
             _day = 1;
             _month++;
@@ -98,16 +91,9 @@ Date& operator+=(int day)
 Date operator+(int day) 
 {
     Date tmpDate(_year, _month, _day);
-    int days[13] = {0, 31, 28, 31, 30, 31, 30 , 31, 31, 30, 31, 30 ,31};
     for(int i = 0; i < day; i++)
     {
-        if(tmpDate._year % 4 == 0 && tmpDate._year % 100 != 0)
-        {
-            days[2] = 29;
-        }
-        else 
-            days[2] = 28;
-        if(tmpDate._day % days[_month] == 0)
+        if(tmpDate._day % GetMonthDay(tmpDate._year, tmpDate._month) == 0)
         {
             tmpDate._day = 1;
             tmpDate._month++;
@@ -130,19 +116,12 @@ Date operator+(int day)
 Date operator-(int day)
 {
     Date tmpDate(_year, _month, _day);
-    int days[13] = {0, 31, 28, 31, 30, 31, 30 , 31, 31, 30, 31, 30 ,31};
     for(int i = 0; i < day; i++)
     {
         tmpDate._day--;
-        if(tmpDate._year % 4 == 0 && tmpDate._year % 100 != 0)
-        {
-            days[2] = 29;
-        }
-        else 
-            days[2] = 28;
         if(tmpDate._day == 0)
         {
-            tmpDate._day = days[_month - 1];
+            tmpDate._day = GetMonthDay(tmpDate._year, tmpDate._month);
             tmpDate._month--;
             if(tmpDate._month == 0)
             {
@@ -188,25 +167,18 @@ Date& operator-=(int day)
 
 Date& operator++()
 {
-    int days[13] = {0, 31, 28, 31, 30, 31, 30 , 31, 31, 30, 31, 30 ,31};
-    if(_year % 4 == 0 && _year % 100 != 0)
+    if(_day % GetMonthDay(_year, _month) == 0)
+    {
+        _day = 1;
+        _month++;
+        if(_month % 12 == 0)
         {
-            days[2] = 29;
+            _month = 1;
+            _year++;
         }
-        else 
-            days[2] = 28;
-        if(_day % days[_month] == 0)
-        {
-            _day = 1;
-            _month++;
-            if(_month % 12 == 0)
-            {
-                _month = 1;
-                _year++;
-            }
-        }
-        else
-            _day++;
+    }
+    else
+        _day++;
     return *this;
 }
 
@@ -215,14 +187,7 @@ Date& operator++()
 
 Date operator++(int)
 {
-    int days[13] = {0, 31, 28, 31, 30, 31, 30 , 31, 31, 30, 31, 30 ,31};
-    if(_year % 4 == 0 && _year % 100 != 0)
-        {
-            days[2] = 29;
-        }
-    else 
-        days[2] = 28;
-    if(_day % days[_month] == 0)
+    if(_day % GetMonthDay(_year, _month) == 0)
     {
         _day = 1;
         _month++;
@@ -243,22 +208,18 @@ Date operator++(int)
 
 Date operator--(int)
 {
-    _day--;
-    int days[13] = {0, 31, 28, 31, 30, 31, 30 , 31, 31, 30, 31, 30 ,31};
-    if(_year % 4 == 0 && _year % 100 != 0)
-    {
-        days[2] = 29;
-    }
-    else 
-        days[2] = 28;
     if(_day == 0)
     {
-        _day = days[_month - 1];
-        _month--;
-        if(_month == 0)
+        if(_month-- == 0)
         {
             _month = 12;
             _year--;
+            _day = GetMonthDay(_year, _day);
+        }
+        else
+        {
+            _month--;
+            _day = GetMonthDay(_year, _month - 1);
         }
     }
     return *this;
@@ -271,21 +232,18 @@ Date operator--(int)
 Date& operator--()
 {
     _day--;
-    int days[13] = {0, 31, 28, 31, 30, 31, 30 , 31, 31, 30, 31, 30 ,31};
-    if(_year % 4 == 0 && _year % 100 != 0)
-    {
-        days[2] = 29;
-    }
-    else 
-        days[2] = 28;
     if(_day == 0)
     {
-        _day = days[_month -1];
-        _month--;
         if(_month == 0)
         {
             _month = 12;
             _year--;
+            _day = GetMonthDay(_year, _month);
+        }
+        else 
+        {
+            _month--;
+            _day = GetMonthDay(_year, _month);
         }
     }
     return *this;
