@@ -9,7 +9,12 @@ public:
     {
         int result =0;
         int hash[1000][2];
-        
+       for()
+       {
+           for()
+           {
+           }
+       }
 
         return result;
     }
