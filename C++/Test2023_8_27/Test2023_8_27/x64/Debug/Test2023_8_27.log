@@ -1,4 +1,0 @@
-﻿  源.cpp
-C:\Users\93247\Desktop\就业\Test2023_8_27\Test2023_8_27\源.cpp(30,1): warning C4326: “main”的返回类型应为“int”而非“void”
-源.obj : error LNK2019: 无法解析的外部符号 "char __cdecl Fun(char,char)" (?Fun@@YADDD@Z)，函数 main 中引用了该符号
-C:\Users\93247\Desktop\就业\Test2023_8_27\x64\Debug\Test2023_8_27.exe : fatal error LNK1120: 1 个无法解析的外部命令
