@@ -1,0 +1,2 @@
+gcc usr.c -o usr -L .. -lprint
+export LD_LIBRARY_PATH=:/home/cqx/桌面/cqx/Linux/library
