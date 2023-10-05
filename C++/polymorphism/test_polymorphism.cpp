@@ -1,6 +1,34 @@
 #include <iostream>
 using namespace std;
+class A
+{
+public:
+	//纯虚函数，不实现，意义为不能实例化
+	virtual void Eat() = 0;//接口
+};
 
+class Dog :public A
+{
+public:
+	virtual void Eat()//不能缺少父类虚函数的实现，不然为纯虚函数，不能实例化
+	{
+		cout << "Dog::Eat()" << endl;
+	}
+};
+
+class Cat :public A
+{
+public:
+	virtual void Eat()
+	{
+		cout << "Cat::Eat()" << endl;
+	}
+};
+
+void Eat(A& animal)
+{
+	animal.Eat();
+}
 class Person
 {
     //静态的多态是静态绑定即重载
@@ -10,6 +38,52 @@ public:
         cout << "Buy FUll-PriceTicket" << endl;
     }
 };
+
+class Bird :public A
+{
+public:
+	virtual void Eat() = 0;
+
+	virtual void Fly() = 0;
+};
+
+class TN :public Bird
+{
+public:
+	virtual void Eat()
+	{
+		cout << "TN::Eat()" << endl;
+	}
+	
+private:
+	virtual void Fly()//阻止调用鸵鸟飞的函数
+	{}
+};
+
+class sparrow :public Bird
+{
+public:
+	virtual void Eat()
+	{
+		cout << "sparrow:Eat()" << endl;
+	}
+
+	virtual void Fly()
+	{
+		cout << "sparrow::Fly()" << endl;
+	}
+};
+
+void Eat(A& animal)
+{
+	animal.Eat();
+}
+
+void Fly(Bird& bird)
+{
+	bird.Fly();
+}
+
 
 class student:public Person 
 {
