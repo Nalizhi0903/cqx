@@ -92,7 +92,6 @@ protected:
 		{
 			pr->rightChild = p;//若插入值比节点大，插入右子树
 		}
-		return;
 		//调整平衡
 		while (!st.empty())
 		{
@@ -112,86 +111,107 @@ protected:
 				//调整平衡
 				if (pr->balance_element < 0)
 				{
-					if (p->balance_element < 0)        
+					if (p->balance_element < 0)	 //往节点的左子树的左子树插入元素，导致左子数的平衡因子-1，并导致节点平衡因子变为-2，右旋转
 					{
-						//cout<<"RightRotate"<<endl;
-						//RotateR(pr);
+						RotateR(pr);
 					}
-					else  // <
+					else 
 					{
-						//cout<<"LRRotate"<<endl;
-						//RotateLR(pr);
+						RotateLR(pr);	
 					}
 				}
 				else
 				{
-					if (p->balance_element > 0)     
+					if (p->balance_element > 0) //  往节点的右子树的右子树插入元素，导致右子数的平衡因子-1，并导致节点平衡因子变为-2，左旋转
 					{
-						//cout<<"LeftRotate"<<endl;
-						//RotateL(pr);
+						RotateL(pr);
 					}
 					else  //  > 
 					{
-						//cout<<"RLRotate"<<endl;
-						//RotateRL(pr);
+						RotateRL(pr);
 					}
 				}
 				break;
 			}
 		}
+		if (st.empty())
+			t = pr;
 	}
-	//中序遍历
-	void Inorder(AVLNode<Type>* t)
+	void RotateR(AVLNode<Type>*& ptr)
 	{
-		if (t != nullptr)
-		{
-			Inorder(t->leftChild);
-			cout << t->data << endl;;
-			Inorder(t->rightChild);
-		}
+		AVLNode<Type>* p = ptr->leftChild, *R = ptr;//先定位节点和旋转的节点
+		R->leftChild = p->rightChild;
+		p->rightChild = R;
+		p->balance_element = R->balance_element = 0;
+		ptr = p;
 	}
-	AVLNode<Type>* Find(AVLNode<Type>* t, const Type& key)
+	void RotateL(AVLNode<Type>*& ptr)
 	{
-		if (t == nullptr || key == t->data)
-			return t;
-		if (key < t->data)
-		{
-			Find(t->leftChild, key);
-		}
-		if (key > t->data)
-		{
-			Find(t->rightChild, key);
-		}
+		AVLNode<Type>* p = ptr->rightChild, * R = ptr;//先定位节点和旋转的节点
+		R->rightChild = p->leftChild;
+		p->leftChild = R;
+		p->balance_element = R->balance_element = 0;
+		ptr = p;
 	}
-	Type Max(AVLNode<Type>* t)const
+	void RotateLR(AVLNode<Type>*& ptr)
 	{
-		AVLNode<Type>* p = t;
-		while (p->rightChild != nullptr)
-		{
-			p = p->rightChild;
-		}
-		return p->data;
+		AVLNode<Type>* R = ptr->rightChild, * L = ptr, * p = R->leftChild;
+		//先左转
+		R->leftChild = p->rightChild;
+		p->rightChild = R;
+		//修改平衡因子
+
+		//再右转
+		L->rightChild = p->leftChild;
+		p->leftChild = L;
+		//修改平衡因子
+		ptr = p;
+
+
 	}
-	Type Min(AVLNode<Type>* t)const
+	void RotateRL(AVLNode<Type>*& ptr)
 	{
-		AVLNode<Type>* p = t;
-		while (p->leftChild != nullptr)
-		{
-			p = p->leftChild;
-		}
-		return p->data;
+		AVLNode<Type>* R = ptr->rightChild, *L = ptr,*p = R->leftChild;
+		//先右转
+		R->leftChild = p->rightChild;
+		p->rightChild = R;
+		//修改平衡因子
+		
+		if (p->balance_element >= 0)
+			R->balance_element = 0;
+		else
+			R->balance_element = 1;
+		/*
+			p节点平衡因子为-1时只有左子树，而p节点在右转时没有右子树给R节点的左子树指向，
+			导致R节点的缺少左子树，多一个右子树故平衡因子为1，其他情况则都为0
+		*/
+		//再左转
+		L->rightChild = p->leftChild;
+		p->leftChild = L;
+		//修改平衡因子
+		if (ptr->balance_element == 1)
+			L->balance_element = -1;
+		else
+			L->balance_element = 0;
+		/*
+			p节点平衡因子为1时只有右子树，而p节点在左转时没有左子树给L节点的左子树指向，
+			导致L节点的缺少左子树，多一个左子树故平衡因子为-1，其他情况则都为0
+		*/
+		ptr = p;
 	}
+
 private:
 	AVLNode<Type>* root;
 };
 
-int main()
+void main()
 {
-	vector<int> v = { 16,13,7,8,15,9,45 };
+	vector<int> v = { 3,2,8,6,9,7 };
 	AVL<int> avl;
 	for (auto& e : v)
 	{
 		avl.Insert(e);
 	}
-    return 0;
+
 }
+
