@@ -136,6 +136,14 @@ protected:
 		}
 		if (st.empty())
 			t = pr;
+		else
+		{
+			p = st.top();
+			if (p->data > pr->data)
+				p->rightChild = pr;
+			else
+				p->leftChild = pr;
+		}
 	}
 	void RotateR(AVLNode<Type>*& ptr)
 	{
@@ -155,16 +163,33 @@ protected:
 	}
 	void RotateLR(AVLNode<Type>*& ptr)
 	{
-		AVLNode<Type>* R = ptr->rightChild, * L = ptr, * p = R->leftChild;
+		AVLNode<Type>* L = ptr->leftChild, * R = ptr, * p = L->rightChild;
 		//先左转
+		L->rightChild = p->leftChild;
+		p->leftChild = L;
+		//修改平衡因子
+		if (p->balance_element <= 0)
+			L->balance_element = 0;
+		else
+			L->balance_element = -1;
+		/*
+			p节点平衡因子为1时只有右子树，而p节点在左转时没有左子树给L节点的左子树指向，
+			导致L节点的缺少左子树，多一个左子树故平衡因子为-1，其他情况则都为0
+		*/
+
+		//再右转
 		R->leftChild = p->rightChild;
 		p->rightChild = R;
 		//修改平衡因子
 
-		//再右转
-		L->rightChild = p->leftChild;
-		p->leftChild = L;
-		//修改平衡因子
+		if (p->balance_element >= 0)
+			R->balance_element = 0;
+		else
+			R->balance_element = 1;
+		/*
+			p节点平衡因子为-1时只有左子树，而p节点在右转时没有右子树给R节点的左子树指向，
+			导致R节点的缺少左子树，多一个右子树故平衡因子为1，其他情况则都为0
+		*/
 		ptr = p;
 
 
@@ -189,7 +214,7 @@ protected:
 		L->rightChild = p->leftChild;
 		p->leftChild = L;
 		//修改平衡因子
-		if (ptr->balance_element == 1)
+		if (p->balance_element == 1)
 			L->balance_element = -1;
 		else
 			L->balance_element = 0;
@@ -206,7 +231,7 @@ private:
 
 void main()
 {
-	vector<int> v = { 3,2,8,6,9,7 };
+	vector<int> v = { 9,3,10,2,5,4 };
 	AVL<int> avl;
 	for (auto& e : v)
 	{
