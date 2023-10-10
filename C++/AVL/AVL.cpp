@@ -144,7 +144,7 @@ protected:
 	}
 	bool Remove(AVLNode<Type>*& t, Type v)
 	{
-		AVLNode<Type>* pr = nullptr, * p = t, * q, * ppr;
+		AVLNode<Type>* pr = nullptr, * p = t, * q, * ppr = nullptr;
 		int d, dd = 0;
 		stack<AVLNode<Type>*> st;
 		//寻找节点
@@ -200,7 +200,7 @@ protected:
 					pr->balance_element--;
 				else
 					pr->balance_element++;
-				if (!st.empty)
+				if (!st.empty())
 				{
 					ppr = st.top();
 					dd = (ppr->leftChild == pr) ? -1 : 1;
@@ -210,36 +210,58 @@ protected:
 				//原先父结点平衡因子为0，删除后，结点平衡因子为1或-1，不影响上面结点平衡因子
 				if (pr->balance_element == -1 || pr->balance_element == 1)
 					break;
-				if(pr->balance_element != 0)//删除后，结点平衡因子为2或-2
+				if (pr->balance_element != 0)//删除后，结点平衡因子为2或-2
 				{
-					if (pr->balance_element == -2)
+					if (pr->balance_element < 0)
 					{
-						if (ppr->balance_element < 0)
-							RotateR(pr);
-						else
-							RotateLR(pr);
+						d = -1;
+						q = pr->leftChild;
 					}
 					else
 					{
-						if (pr->balance_element == 2)
-						{
-							if (ppr->balance_element < 0)
-								RotateL(pr);
-							else
-								RotateRL(pr);
-						}
+						d = 1;
+						q = pr->rightChild;
 					}
+					if (q->balance_element == 0)
+					{
+						if (d == -1)
+						{
+							RotateR(pr);
+							pr->balance_element = 1;
+							pr->leftChild->balance_element = -1;
+						}
+						else
+						{
+							RotateL(pr);
+							pr->balance_element = -1;
+							pr->rightChild->balance_element = 1;
+						}
+						break;
+					}
+					if (q->balance_element == d)
+					{
+						if (d == -1)
+							RotateR(pr);
+						else
+							RotateL(pr);
+					}
+					else
+					{
+						if (d == -1)
+							RotateLR(pr);
+						else
+							RotateRL(pr);
+					}
+					if (dd == -1)
+						ppr->leftChild = pr;
+					else if (dd == 1)
+						ppr->rightChild = pr;
 				}
-				else
-				{
-
-				}
+				q = pr;
 			}
+			if (st.empty())
+				t = pr;
 		}
-		
-		//重新链接
-			
-
 		delete p;
 		p = nullptr;
 		return true;
@@ -325,7 +347,7 @@ private:
 	AVLNode<Type>* root;
 };
 
-void main()
+int main()
 {
 	vector<int> v = { 8,9,10,6,7,5,3,1}; 
 	AVL<int> avl;
@@ -334,6 +356,7 @@ void main()
 		avl.Insert(e);
 	}
 	avl.Remove(5);
+	return 0;
 
 }
 
