@@ -1,7 +1,7 @@
 #include <iostream>
 using namespace std;
 
-typedef enum{RED,BLACK}Color_t;
+typedef enum{ RED, BLACK }Color_t;
 
 template<class Type>
 class RBTree;
@@ -9,30 +9,31 @@ class RBTree;
 template<class Type>
 class RBNode
 {
-friend class RBTree<Type>;
+    friend class RBTree<Type>;
 public:
-    RBNode(Type d = Type(), RBNode<Type>*left = nullptr, RBNode<Type>*right = nullptr):data(d),leftChild(left),rightChild(right),parent(nullptr),color(RED)
-    {
-
-    }
+    RBNode(Type d = Type(), RBNode<Type>* left = nullptr, RBNode<Type>* right = nullptr) :data(d), leftChild(left), rightChild(right), parent(nullptr), color(RED)
+    {}
     ~RBNode()
     {}
 
 public:
 private:
+    Type          data;
+    Color_t       color;
     RBNode<Type>* leftChild;
     RBNode<Type>* rightChild;
     RBNode<Type>* parent;
-    Color_t       color;
-    Type data;
 };
 
 template<class Type>
 class RBTree
 {
 public:
-    RBTree():NIL(BuyNode()),root(NIL)
-    {}
+    RBTree():NIL(BuyNode()), root(NIL)
+    {
+        NIL->color = BLACK;
+        NIL->leftChild = NIL->rightChild = NIL->parent = nullptr;
+    }
     ~RBTree()
     {}
 public:
@@ -48,29 +49,86 @@ public:
     {
         return RotateR(t);
     }
+    void RotateLR(RBNode<Type>* t)
+    {
+        return RotateLR(t);
+    }
+    void RotateRL(RBNode<Type>* t)
+    {
+        return RotateRL(t);
+    }
 protected:
-    RBNode<Type>* BuyNode(const Type &v=Type())
+    void Insert(RBNode<Type>*& t, const Type& v);
+    void Insert_FIXUP(RBNode<Type>*& t, RBNode <Type>* x);
+protected:
+    RBNode<Type>* BuyNode(const Type& v = Type())
     {
         RBNode<Type>* s = new RBNode<Type>(v);
         s->leftChild = s->rightChild = s->parent = NIL;
         return s;
     }
-    void Insert(RBNode<Type>* t, const Type& v)
-    {
-        RBNode<Type>* x = t, pr = NIL;
-        if(x != NIL)
-        {
-
-        }
-        x = BuyNode(v);
-    }
 private:
-    RBNode<Type>* root;
     RBNode<Type>* NIL;//外部节点，为黑色
+    RBNode<Type>* root;
 };
+
+template <class Type>
+void RBTree<Type>::Insert(RBNode<Type>*& t, const Type& v)
+{
+    //x为插入节点，pr为父结点
+    RBNode<Type>* x = t, * pr = NIL;
+    while(x != NIL)
+    {
+        if (x->data == v)
+            return;
+        pr = x;
+        if (x->data > v)
+            x = x->leftChild;
+        else
+            x = x->rightChild;
+    }
+    x = BuyNode(v);
+    if (pr == NIL)
+        t = x;
+    else if (x->data < pr->data)
+        pr->leftChild = x;
+    else
+        pr->rightChild = x;
+    x->parent = pr;
+    //调节平衡
+    Insert_FIXUP(t, x);
+}
+
+template <class Type>
+void RBTree<Type>::Insert_FIXUP(RBNode<Type>*& t, RBNode<Type>* x)
+{
+    while (x != t && x->parent->color == RED)//若父结点颜色为黑直接插入，可以推出来，父结点为黑的时候插入不影响平衡，因为父结点为黑时，高度不是最大的，插入一个红色的结点并不会超过最大高度
+    {
+        RBNode<Type>* s = x->parent->parent->rightChild;
+        if (x->parent->parent->leftChild == x->parent)
+        {
+            //叔伯结点为红色
+            if (s->color = red)
+            {
+                
+            }
+            else
+            {
+
+            }
+        }
+    }
+    t->color = BLACK;
+}
 
 int main()
 {
     RBTree<int> rb;
+    int ar[] = { 8,9,7,6,4,3,10 };
+    int n = sizeof(ar) / sizeof(ar[0]);
+    for (int i = 0; i < n; i++)
+    {
+        rb.Insert(ar[i]);
+    }
     return 0;
 }
