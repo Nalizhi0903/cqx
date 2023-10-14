@@ -1,6 +1,7 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <functional>
 using namespace std;
 
 int main()
@@ -16,5 +17,10 @@ int main()
     ismap[4] = "CJB";
     cout << ismap[4] << endl;
     cout << ismap.count(1) << endl;//统计关键字出现的次数
+    multimap<int,string,greater<int>> ismulmap = {{2,"zeus"},{1,"faker"},{3,"chovy"},{4,"uzi"}};//multimap允许重复值
+    ismulmap.insert(make_pair<int,string>(2,"AQW"));
+    for(auto& e:ismulmap)
+        cout << e.first << ":" << e.second << endl;
+
     return 0;
 }
