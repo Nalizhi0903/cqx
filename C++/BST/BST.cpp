@@ -130,33 +130,58 @@ protected:
 		}
 		else
 		{
-			if (t->leftChild == nullptr && t->rightChild == nullptr)
+			BSTNode<Type>* p;
+			if (t->leftChild != nullptr && t->rightChild != nullptr)
 			{
-				//叶子节点
-				delete t;
-				t = nullptr;
+				p = t->leftChild;
+				while (p->rightChild != nullptr)
+				{
+					p = p->rightChild;
+				}
+				t->data = p->data;
+				Remove(p, p->data);
 			}
-			else if (t->leftChild != nullptr && t->rightChild == nullptr)
+			else
 			{
-				//有左子树，无右子树
-				BSTNode<Type>* p = t;
-				t = t->leftChild;
+				p = t;
+				if (t->leftChild != nullptr)
+					t = t->leftChild;
+				else
+					t = t->rightChild;
 				delete p;
 			}
-			else if (t->leftChild == nullptr && t->rightChild != nullptr)
+
+			/*if (t->leftChild == nullptr && t->rightChild == nullptr)
 			{
-				//无左子数，有右子树
-				BSTNode<Type>* p = t;
-				t = t->rightChild;
-				delete p;
+					//叶子节点
+					delete t;
+					t = nullptr;
+				}
+				else if (t->leftChild != nullptr && t->rightChild == nullptr)
+				{
+					//有左子树，无右子树
+					BSTNode<Type>* p = t;
+					t = t->leftChild;
+					delete p;
+				}
+				else if (t->leftChild == nullptr && t->rightChild != nullptr)
+				{
+					//无左子数，有右子树
+					BSTNode<Type>* p = t;
+					t = t->rightChild;
+					delete p;
+				}
+				else if (t->leftChild != nullptr && t->rightChild != nullptr)
+				{
+					BSTNode<Type>* p = t->leftChild;
+					while (p->rightChild != nullptr)
+					{
+						p = p->rightChild;
+					}
+					t->data = p->data;
+					Remove(p,p->data);
+				}*/
 			}
-			else if (t->leftChild != nullptr && t->rightChild != nullptr)
-			{
-				int val = Max(t->leftChild);
-				t->data = val;
-				Remove(t->leftChild,val);
-			}
-		}
 		return true;
 	}
 private:
@@ -165,7 +190,7 @@ private:
 
 int main()
 {
-	vector<int> iv = { 2,3,6,4,7,5,9,1,40 };
+	vector<int> iv = { 2,3,0,6,4,7,5,9,1,40 };
 	BST<int> bst;
 	for (auto& e : iv)
 	{
