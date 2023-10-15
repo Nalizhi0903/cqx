@@ -1,2 +1,2 @@
-test:pipe.c
+test:nonblock.c
 	gcc $^ -o $@
