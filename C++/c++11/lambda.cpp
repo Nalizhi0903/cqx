@@ -54,5 +54,19 @@ int main()
     sort(ic.begin(),ic.end(),greater<Test>());
     sort(ic.begin(),ic.end(),My_less());
     []{};//最基本的lambda表达式
+    [](int n)->void 
+    {
+        cout << "n = " << n << endl;
+    }(10);
+    auto f = [](int n)->void{cout<<"n = "<<n<<endl;};
+    f(100);
+    auto f1 = [](int a, int b)->int{return a+b;};
+    cout << f1(4,8) << endl;
+    int k = 1, m = 2;
+    auto f2 = [k , m]()->int{return k+m;};//不可修改k，m
+    int x = 0, y = 0;
+    auto f3 = [x,y](int a, int b)mutable->int{x=1000;y=20000;return a+b+x+y;};//mutable可以消除常性使参赛可以修改
+    cout << f2() << endl;
+    cout << f3(4,5) << endl;
     return 0;
 }
