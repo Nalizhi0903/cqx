@@ -3,6 +3,20 @@
 #include <string>
 using namespace std;
 
+namespace bit
+{
+    template<class _Ty>
+    class auto_ptr
+    {
+    public:
+        auto_ptr(_Ty* _Ptr = 0):_Myptr(_Ptr)
+        {
+        }
+    private:
+        _Ty* _Myptr;
+    };
+}
+
 template<class _Ty>
 class Auto_ptr 
 {
@@ -19,9 +33,23 @@ public:
     }
     Auto_ptr(Auto_ptr<_Ty>& Y):_Owns(Y._Owns), _Ptr(Y.release())
     {}
-    Auto_ptr<_Ty>& operator=(Auto_ptr& a)
+    Auto_ptr<_Ty>& operator=(Auto_ptr& Y)
     {
-        _Ptr = a.release();
+        if(this != Y)
+        {
+            if(_Ptr != Y._Ptr)
+            {
+                if(_Owns)
+                    delete _Ptr;
+                _Owns = Y._Owns;
+            }
+            else if(Y._Owns)
+            {
+                _Owns = true;
+            }
+            _Ptr = Y.release();
+        }
+        return *this;
     }
 public:
     _Ty& operator*()
