@@ -168,6 +168,6 @@ int main()
         rb.Insert(ar[i]);
     }
     rb.Insert(6);
-
+    cout << endl;
     return 0;
 }
