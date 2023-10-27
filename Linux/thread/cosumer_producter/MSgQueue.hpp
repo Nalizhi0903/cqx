@@ -23,7 +23,7 @@ public:
     void Push(int data)
     {
         pthread_mutex_lock(&_q_lock);
-        if((int)_que.size() >= _capacity)
+        while((int)_que.size() >= _capacity)
         {
             pthread_cond_wait(&_prod_cond, &_q_lock);
         }
@@ -34,7 +34,7 @@ public:
     int Pop()
     {
         pthread_mutex_lock(&_q_lock);
-        if(_que.size() <= 0)
+        while(_que.size() <= 0)
         {
             pthread_cond_wait(&_cons_cond, &_q_lock);
         }
