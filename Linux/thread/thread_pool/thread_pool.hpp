@@ -54,7 +54,41 @@ public:
     // 1.创建线程池的线程
     int OnInit()
     {
-
+        int exit_thread_count = 0;
+        for(int i = 0; i < _thread_count; i++)
+        {
+            pthread_t tid;
+            int ret = pthread_create(&tid, NULL, thread_pool_start, (void*)this);
+            if(ret < 0)
+            {
+                exit_thread_count++;
+            }
+        }
+        _thread_count -= exit_thread_count;
+        if(_thread_count <= 0)
+        {
+            return -1;
+        }
+        return _thread_count;
+    }
+    //线程入口函数，线程池中的线程执行的都是这个函数
+    //创建线程的时候，将this指针通过入口函数传递进来
+    static void* thread_pool_start(void* arg)//变成静态成员不会隐式传递*this,满足thread_create函数的参数要求
+    {
+        pthread_detach(pthread_self());
+        ThreadPool* tp = (ThreadPool*)arg;
+        while(1)
+        {
+            pthread_mutex_lock(&tp->_lock);
+            while(tp->_que.empty())
+            {
+                pthread_cond_wait(&tp->_cons_cond, &tp->_lock);
+            }
+            QueueData qd;
+            tp->Pop(&qd);
+            qd.Run();
+            pthread_mutex_unlock(&tp->_lock);
+        }
     }
     void Push(const QueueData& qd)
     {
@@ -62,7 +96,8 @@ public:
     }
     void Pop(QueueData* qd)
     {
-
+        *qd = _que.front();
+        _que.pop();
     }
 private:
     queue<QueueData> _que;
