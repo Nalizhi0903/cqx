@@ -17,6 +17,10 @@ public:
     {
 
     }
+    QueueData(int data, Handle fun):_data(data), _handler(fun)
+    {
+
+    }
     ~QueueData()
     {
 
@@ -35,19 +39,17 @@ private:
 class ThreadPool
 {
 public:
-    ThreadPool()
+    ThreadPool(int thread_count, int capacity = 10):_thread_count(thread_count), _capacity(capacity), _exit_flag(0)
     {
         pthread_mutex_init(&_lock, NULL);
         pthread_cond_init(&_cons_cond, NULL);
         pthread_cond_init(&_prod_cond, NULL);
-        _thread_count = 10;
     }
     ~ThreadPool()
     {
         pthread_mutex_destroy(&_lock);
         pthread_cond_destroy(&_cons_cond);
         pthread_cond_destroy(&_prod_cond);
-
     }
 public:
     //初始化线程池
@@ -82,26 +84,43 @@ public:
             pthread_mutex_lock(&tp->_lock);
             while(tp->_que.empty())
             {
+                if(tp->_exit_flag)
+                {
+                    pthread_mutex_unlock(&tp->_lock);
+                    tp->_thread_count--;
+                    pthread_exit(NULL);
+                }
                 pthread_cond_wait(&tp->_cons_cond, &tp->_lock);
             }
             QueueData qd;
             tp->Pop(&qd);
-            qd.Run();
             pthread_mutex_unlock(&tp->_lock);
+            pthread_cond_signal(&tp->_prod_cond);
+            qd.Run();
         }
     }
     void Push(const QueueData& qd)
     {
-
+        pthread_mutex_lock(&_lock);
+        while((int)_que.size() > _capacity)
+        {
+            pthread_cond_wait(&_prod_cond, &_lock);
+        }
+        _que.push(qd);
+        pthread_mutex_unlock(&_lock);
+        pthread_cond_signal(&_cons_cond);
     }
     void Pop(QueueData* qd)
     {
+
         *qd = _que.front();
         _que.pop();
     }
 private:
     queue<QueueData> _que;
     int _thread_count;
+    int _capacity;
+    int _exit_flag;
     //互斥
     pthread_mutex_t _lock;
     //同步
