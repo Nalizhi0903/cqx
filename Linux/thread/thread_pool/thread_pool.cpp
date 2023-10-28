@@ -23,9 +23,7 @@ int main()
        QueueData qd(i, fun);
        tp->Push(qd);
    }
-   while(1)
-   {
-       sleep(1);
-   }
+   tp->ThreadPoolExit();
+   sleep(2);
    return 0;
 }

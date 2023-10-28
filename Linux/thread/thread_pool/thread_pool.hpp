@@ -82,7 +82,7 @@ public:
         while(1)
         {
             pthread_mutex_lock(&tp->_lock);
-            while(tp->_que.empty())
+            while(tp->_que.empty())//如果while都换成if的话，那么线程1、2都被唤醒了，但是，此时应该线程1继续等待才对，换成while的话 就可避免了
             {
                 if(tp->_exit_flag)
                 {
@@ -102,6 +102,11 @@ public:
     void Push(const QueueData& qd)
     {
         pthread_mutex_lock(&_lock);
+        if(_exit_flag)
+        {
+            pthread_mutex_unlock(&_lock);
+            return;
+        }
         while((int)_que.size() > _capacity)
         {
             pthread_cond_wait(&_prod_cond, &_lock);
@@ -115,6 +120,17 @@ public:
 
         *qd = _que.front();
         _que.pop();
+    }
+    void ThreadPoolExit()
+    {
+        _exit_flag = 1;
+        //方法一
+        while(_thread_count > 0)
+        {
+            pthread_cond_signal(&_cons_cond);
+        }
+        //方法二
+        //pthread_cond_broadcast(&_cons_cond);
     }
 private:
     queue<QueueData> _que;
