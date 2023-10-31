@@ -1,6 +1,7 @@
 #pragma once 
 #include "DataBaseServer.hpp"
 #include <iostream>
+#include <jsoncpp/json/json.h>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -59,7 +60,9 @@ class UserManager
       //_pre_id:用户注册的时候，给用户的id
       //        1、数据库已有的用户id不能重复
       //        2、数据库已有的最大的用户id+1
-      _dbs->GetAllUser();
+      Json::Value all_user;
+      _dbs->GetAllUser(&all_user);
+      cout << all_user << endl;
       return true;
     }
   private:

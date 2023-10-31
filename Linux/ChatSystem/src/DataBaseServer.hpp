@@ -5,6 +5,7 @@
 #pragma once
 #include <stdio.h>
 #include <iostream>
+#include <jsoncpp/json/json.h>
 #include <vector>
 #include <mysql/mysql.h>
 #include <string>
@@ -57,7 +58,7 @@ class DataBaseServer
         }
 
 #define GETALLUSER "select * from user_info;"
-        bool GetAllUser()
+        bool GetAllUser(Json::Value* all_user)
         {
           //执行sql
           _lock.lock();
@@ -76,11 +77,18 @@ class DataBaseServer
           for(size_t i = 0; i < rows; i++)
           {
             MYSQL_ROW row = mysql_fetch_row(res);
-            cout << row[0] << " "
-                 << row[1] << " " 
-                 << row[2] << " " 
-                 << row[3] << " " 
-                 << row[4] << endl;
+            //cout << row[0] << " "
+            //     << row[1] << " " 
+            //     << row[2] << " " 
+            //     << row[3] << " " 
+            //     << row[4] << endl;
+            Json::Value tmp;
+            tmp["userid"] = atoi(row[0]);
+            tmp["nickname"] = row[1];
+            tmp["school"] = row[2];
+            tmp["telnum"] = row[3];
+            tmp["passwd"] = row[4];
+            all_user->append(tmp);
           }
           _lock.unlock();
           return false;
