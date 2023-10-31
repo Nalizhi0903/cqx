@@ -1,4 +1,13 @@
 #include "DataBaseServer.hpp"
+#include "UserManager.hpp"
+
+int main()
+{
+  UserManager user;
+  user.InitUserManager();
+  return 0;
+}
+#if 0
 int main()
 {
   DataBaseServer dbs;
@@ -35,3 +44,4 @@ int main()
   dbs.GetAllUser();
   return 0;
 }
+#endif
