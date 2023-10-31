@@ -37,6 +37,9 @@ int main()
         MYSQL_ROW row = mysql_fetch_row(res);//获取结果集下一行的信息
         printf("%s,%s,%s,%s,%s\n", row[0], row[1], row[2], row[3], row[4]);
     }
+    mysql_free_result(res);//释放结果集
+    mysql_close(&my);//释放操作句柄
+    //编译链接 -lmysqlclient
     while(1)
     {
 
