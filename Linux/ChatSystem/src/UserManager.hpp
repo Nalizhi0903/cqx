@@ -44,7 +44,13 @@ class UserManager
   public:
     UserManager():_user_map(0), _pre_id(0), _dbs(nullptr)
     {}
-    ~UserManager(){}
+    ~UserManager()
+    {
+      if(_dbs != nullptr)
+      {
+        delete _dbs;
+      }
+    }
 
   public:
     bool InitUserManager()
@@ -62,9 +68,152 @@ class UserManager
       //        2、数据库已有的最大的用户id+1
       Json::Value all_user;
       _dbs->GetAllUser(&all_user);
-      cout << all_user << endl;
+      //cout << all_user.size() << endl;
+      //cout << all_user << endl;
+      for(int i = 0; i < (int)all_user.size(); i++)
+      {
+        UserInfo ui;
+        ui._nickname = all_user[i]["nickname"].asString(); 
+        ui._school= all_user[i]["school"].asString(); 
+        ui._telnum= all_user[i]["telnum"].asString(); 
+        ui._passwd= all_user[i]["passwd"].asString(); 
+        ui._userid= all_user[i]["userid"].asInt(); 
+
+        ui._user_status = OFFLINE;
+        ui._tcp_socket = -1;
+        _dbs->GetFriend(ui._userid, &ui._friend_list);
+
+        _lock.lock();
+        _user_map[ui._userid] = ui;
+        if(ui._userid >= _pre_id)
+        {
+         _pre_id = ui._userid + 1; 
+        }
+        _lock.unlock();
+      }
+      //检验
+      /*auto iter = _user_map.begin();
+      while(iter != _user_map.end())
+      {
+        cout << iter->second._nickname << endl;
+        iter++;
+      }*/
       return true;
     }
+    
+    //userid：出参，用户管理模块给新用户分配的用户id，返还给上层调用者
+    int DealRegister(const string& nickname, const string& school, const string& telnum, const string& passwd, int* userid)
+    {
+      //1.判断参数有效性
+      if(nickname.size() == 0 || school.size() == 0 || passwd.size() == 0 || telnum.size() == 0)
+      {
+        *userid = -2;
+        return -1;
+      }
+      //2.通过电话号码判断用户是否已经注册过
+      _lock.lock();
+      auto iter = _user_map.begin();
+      while(iter != _user_map.end())
+      {
+        if(iter->second._telnum == telnum)
+        {
+          _lock.unlock();
+          *userid = -2;
+          return -2;
+        }
+        iter++;
+      }
+      _lock.unlock();
+      //3.创建UserInfo，让_user_map维护起来
+      _lock.lock();
+      UserInfo ui(nickname, school, telnum, passwd, _pre_id);
+      _user_map[ui._userid] = ui;
+      _pre_id++;
+      _lock.unlock();
+      //4.插入用户信息到数据库
+      _dbs->InsertUser(ui._userid, ui._nickname, ui._school, ui._telnum, ui._passwd);
+      return 0;
+    }
+
+    int DealLogin(const string& telnum, const string& passwd, int cli_socketfd)
+    {
+      //1.判断参数的有效性
+      if(telnum.size() == 0 || passwd.size() == 0 || cli_socketfd < 0)
+      {
+        return -1;
+      }
+      //2.判断用户是否存在
+      _lock.lock();
+      auto iter = _user_map.begin();
+      while(iter != _user_map.end())
+      {
+        if(iter->second._telnum == telnum)
+        {
+          break;
+        } 
+        iter++;
+      }
+      if(iter == _user_map.end())
+      {
+        _lock.unlock();
+        return -2;
+      }
+      //3.判断密码是否正确
+      if(iter->second._passwd != passwd)
+      {
+        _lock.unlock();
+        return -3;
+      }
+      //4.更改用户状态，保存新连接套接字
+      iter->second._user_status = ONLINE;
+      iter->second._tcp_socket = cli_socketfd;
+      int userid = iter->second._userid;
+      _lock.unlock();
+      return userid;
+  }
+
+    int IsLogin(int userid)
+    {
+      _lock.lock();
+      auto iter = _user_map.find(userid);
+      if(iter == _user_map.end())
+      {
+        return -1;
+      }
+      if(iter->second._user_status == OFFLINE)
+      {
+        return -2;
+      }
+      _lock.unlock();
+      return 0;
+    }
+
+    //添加好友接口
+    void SetFriend(int user_id1, int user_id2)
+    {
+      //1.判断两个用户是否存在
+      _lock.lock();
+      auto iter1 = _user_map.find(user_id1);
+      if(iter1 == _user_map.end())
+      {
+        _lock.unlock();
+        return;
+      }
+      auto iter2 = _user_map.find(user_id1);
+      if(iter2 == _user_map.end())
+      {
+        _lock.unlock();
+        return;
+      }
+      //2.设置好友信息
+      iter1->second._friend_list.push_back(user_id2);
+      iter2->second._friend_list.push_back(user_id1);
+      _lock.unlock();
+      //3.插入数据库
+      _dbs->InsertFriend(user_id1, user_id2);
+      _dbs->InsertFriend(user_id2, user_id1);
+    }
+
   private:
     //key(int):用户id
     //value(UserInfo):用户信息类
