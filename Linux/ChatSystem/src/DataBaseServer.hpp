@@ -131,7 +131,6 @@ class DataBaseServer
           //格式化sql
           char sql[1024] = {0}; 
           sprintf(sql, INSERTUSER, userid, nickname.c_str(), school.c_str(), telnum.c_str(),passwd.c_str());
-          cout << sql << endl;
           //执行sql
           if(mysql_query(_mysql, sql) == false)
           {
@@ -150,7 +149,6 @@ class DataBaseServer
           {
             return false;
           }
-          cout << userid << " " << friendid << endl;
           return true;
         }
 
