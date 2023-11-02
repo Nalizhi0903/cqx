@@ -1,24 +1,11 @@
 #include <stdio.h>
+#include <iostream>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
 #include <arpa/inet.h>//IPPROTO_UDP
 #include <netinet/in.h>//IPPROTO_UDP
-class UDPServer
-{
-  public:
-    UDPServer()
-    {
-
-    }
-    ~UDPServer()
-    {
-
-    }
-  private:  
-    int _sockfd;
-};
 
 int main()
 {
@@ -45,18 +32,23 @@ int main()
     perror("bind");
     return 0;
   }
-  char buf[1024] = {0};
-  struct sockaddr_in cli_addr;
-  socklen_t len = sizeof(cli_addr);
-  recvfrom(sockfd, buf, sizeof(buf) -1, 0, (struct sockaddr*)&cli_addr,  &len);
-  printf("buf is :%s\n", buf);
-  memset(buf, '\0', 1024);
-  strcpy(buf, "i am server");
-  sendto(sockfd, buf, strlen(buf), 0, (struct sockaddr*)&cli_addr, len);
-  close(sockfd);
+
   while(1)
   {
-    sleep(1);
+    char buf[1024] = {0};
+    struct sockaddr_in cli_addr;
+    socklen_t len = sizeof(cli_addr);
+
+    recvfrom(sockfd, buf, sizeof(buf) -1, 0, (struct sockaddr*)&cli_addr,  &len);
+
+    printf("[%s:%d-say]:%s\n", inet_ntoa(cli_addr.sin_addr), ntohs(cli_addr.sin_port) , buf);
+
+    memset(buf, '\0', 1024);
+    printf("[please enter your msg]:");
+    fflush(stdout);
+    std::cin >> buf;
+    sendto(sockfd, buf, strlen(buf), 0, (struct sockaddr*)&cli_addr, len);
   }
+  close(sockfd);
   return 0;
 }
