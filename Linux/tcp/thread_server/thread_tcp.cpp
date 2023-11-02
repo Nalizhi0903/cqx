@@ -3,14 +3,53 @@
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <pthread.h>
 #include <netinet/tcp.h>
+
+struct TCPSockFD
+{
+  int sockfd;
+};
+
+void* tcp_worker_thread(void* arg)
+{
+  pthread_detach(pthread_self());
+  struct TCPSockFD* ts = (struct TCPSockFD*)arg;
+  int new_sockfd = ts->sockfd;
+  while(1)
+  {
+    char buf[1024] = {0};
+    ssize_t recv_size = recv(new_sockfd, buf, sizeof(buf) - 1, 0);
+    if(recv_size < 0)
+    {
+      perror("recv");
+      return 0;
+    }
+    else if(recv_size == 0)
+    {
+      close(new_sockfd);
+      pthread_exit(NULL);
+    }
+    else 
+    {
+      printf("[buf is] %s:\n", buf);
+    }
+    memset(buf, '\0', 1024);
+    strcpy(buf, "i am server");
+    std::cout << "please enter your msg:  ";
+    fflush(stdout);
+    std::cin >> buf;
+    send(new_sockfd, buf, strlen(buf), 0);
+  }
+}
+
 int main()
 {
   /*  1.创建侦听套接字
    *  2.绑定地址信息（IP，PORT）
    *  3.监听
    *  4.获取新连接
-   *  5.收发数据
+   *  5.创建工作线程，让工作线程1v1收发数据
    *  6.关闭套接字
    * */
   int sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -36,14 +75,24 @@ int main()
     return 0;
   }
 
-  int new_sockfd = accept(sockfd, NULL, NULL);//accept有阻塞属性，没有新连接阻塞等待，有新连接就执行
-  if(new_sockfd < 0)
-  {
-    perror("accept");
-    return 0;
-  }
   while(1)
   {
+    int new_sockfd = accept(sockfd, NULL, NULL);//accept有阻塞属性，没有新连接阻塞等待，有新连接就执行
+    if(new_sockfd < 0)
+    {
+      perror("accept");
+      return 0;
+    }
+
+    struct TCPSockFD* ts = new struct TCPSockFD;
+    ts->sockfd = new_sockfd;
+    pthread_t tid;
+    int ret = pthread_create(&tid, NULL, tcp_worker_thread, (void*)ts);
+    if(ret < 0)
+    {
+      continue;
+    }
+    /*
     char buf[1024] = {0};
     ssize_t recv_size = recv(new_sockfd, buf, sizeof(buf) - 1, 0);
     if(recv_size < 0)
@@ -66,6 +115,7 @@ int main()
     fflush(stdout);
     std::cin >> buf;
     send(new_sockfd, buf, strlen(buf), 0);
+    */
   }
   close(sockfd);
   return 0;
