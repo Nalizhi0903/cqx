@@ -27,26 +27,31 @@ int main()
     perror("connect");
     return 0;
   }
-  char buf[1024] = {0};
-  strcpy(buf, "i am client");
-  send(sockfd, buf, strlen(buf), 0);
-  memset(buf, '\0', 1024);
-  ssize_t recv_size = recv(sockfd, buf, sizeof(buf) - 1, 0);
-  if(recv_size < 0)
+  while(1)
   {
-    perror("recv");
-    return 0;
+    char buf[1024] = {0};
+    std::cout << "please enter your msg:  ";
+    fflush(stdout);
+    std::cin >> buf;
+    send(sockfd, buf, strlen(buf), 0);
+    memset(buf, '\0', 1024);
+    ssize_t recv_size = recv(sockfd, buf, sizeof(buf) - 1, 0);
+    if(recv_size < 0)
+    {
+      perror("recv");
+      return 0;
+    }
+    else if(recv_size == 0)
+    {
+      printf("close\n");
+      close(sockfd);
+      return 0;
+    }
+    else 
+    {
+      printf("[buf is]: %s\n", buf); 
+    }
   }
-  else if(recv_size == 0)
-  {
-    close(sockfd);
-    return 0;
-  }
-  else 
-  {
-    printf("[buf is]: %s\n", buf); 
-  }
-
   close(sockfd);
   return 0;
 }
