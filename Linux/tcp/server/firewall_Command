@@ -1,0 +1,6 @@
+firewall-cmd --state查看防火墙状态
+systemctl start firewalld.service开启防火墙
+firewall-cmd --zone=public --add-port=7878/tcp --permanent开启端口
+systemctl restart firewalld.service重启防火墙
+firewall-cmd --list-ports查看已经开启的防火墙
+firewall-cmd --zone=public --remove-port=8080/tcp --permanent关闭端口

@@ -1,6 +1,9 @@
 #include <iostream>
 using namespace std;
 
+/** 
+ *类型萃取是在模版的基础上区分内置类型和其他类型，主要是将内置类型全特化，然后进行区分，通过区分内置类型和非内置类型，可以提高程序的执行效率 
+ */
 class CInt
 {
 public:
