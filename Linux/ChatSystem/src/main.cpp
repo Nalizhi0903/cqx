@@ -4,14 +4,18 @@
 
 int main()
 {
-  CharServer cs;
-  if(cs.InitChatServer() < 0)
+  ChatServer cs;
+  int ret = cs.InitChatServer();
+  if(ret < 0)
   {
-    cout << "init CharServer failed" << endl;
+    cout << "init ChatServer failed" << endl;
+    cout << ret << endl;
     return 0;
   }
-  if(cs.startChatSever() < 0)
+  ret = cs.startChatSever();
+  if(ret < 0)
   {
+    cout << ret << endl;
     cout << "start server failed" << endl;
     return 0;
   }

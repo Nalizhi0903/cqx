@@ -25,12 +25,12 @@
  * */
 #define TCP_PORT 7878
 #define THREAD_COUNT 4
-class CharServer 
+class ChatServer 
 {
   public:
-    CharServer():_tcp_listen_sockfd(-1), _tcp_port(TCP_PORT), _work_thread_count(THREAD_COUNT), _um(nullptr)
+    ChatServer():_tcp_listen_sockfd(-1), _tcp_port(TCP_PORT), _work_thread_count(THREAD_COUNT), _um(nullptr)
     {}
-    ~CharServer()
+    ~ChatServer()
     {
       if(_recv_que != NULL)
       {
@@ -101,7 +101,7 @@ class CharServer
       //启动各类线程
       //1.接受线程
       pthread_t tid;
-      int ret = pthread_create(&tid, NULL, recv_msg_start, NULL);
+      int ret = pthread_create(&tid, NULL, recv_msg_start, this);
       if(ret < 0)
       {
         return -1;
@@ -116,7 +116,7 @@ class CharServer
       int faile_start_count = 0;
       for(int i = 0; i < _work_thread_count; i++)
       {
-        ret = pthread_create(&tid, NULL, deal_start, NULL);
+        ret = pthread_create(&tid, NULL, deal_start, (void*)this);
         if(ret < 0)
         {
           faile_start_count++;
@@ -131,7 +131,6 @@ class CharServer
       //  将接收回来的新连接套接字描述符放在epoll当中进行监控
       struct sockaddr_in cli_addr;
       socklen_t cli_addr_len = sizeof(cli_addr);
-
       while(1)
       {
         int newsockfd = accept(_tcp_listen_sockfd, (struct sockaddr*)&cli_addr, &cli_addr_len);
@@ -152,9 +151,49 @@ class CharServer
 
     static void* recv_msg_start(void* arg)
     {
+      pthread_detach(pthread_self());
+      /*
+       *  1.调用epoll_wait获取就绪的文件描述符
+       *  2.调用recv获取就绪的文件描述符对应的数据
+       *  3.将获取的内容插入到接收队列中
+       */ 
+      ChatServer* cs = (ChatServer*)arg;
       while(1)
       {
-        //cout << "recv_msg_start" << endl;
+        struct epoll_event arr[10];//arr：存放就绪的事件结构的数组
+        int ret = epoll_wait(cs->_epoll_fd, arr, sizeof(arr)/sizeof(arr[0]), -1);//-1阻塞监控
+        if(ret < 0)
+        {
+          continue;
+        }
+        else 
+        {
+          //epoll监控的文件描述符的类型
+          for(int i = 0; i < ret; i++)
+          {
+            char buf[1024] = {0};
+            ssize_t r_size = recv(arr[i].data.fd, buf, sizeof(buf) - 1, 0);
+            if(r_size < 0)
+            {
+              cout << "recv data failed,sockfd is " << arr[i].data.fd << endl;
+              continue;
+            }
+            else if(r_size == 0)
+            {  
+              //对端关闭连接
+              // 1.不再监控该文件描述符
+              // 2.关闭这个文件描述符
+              // 3.业务场景
+              epoll_ctl(cs->_epoll_fd, EPOLL_CTL_DEL, arr[i].data.fd, NULL);
+              close(arr[i].data.fd);
+            }
+            else 
+            {
+              cout << "recv_msg_start recv msg: " << buf << " from newsockfd is" << arr[i].data.fd << endl;
+              cs->_recv_que->Push(buf);
+            }
+          }
+        }
         sleep(1);
       }
     }
@@ -170,9 +209,13 @@ class CharServer
 
     static void* deal_start(void* arg)
     {
+      pthread_detach(pthread_self());
+      ChatServer* cs = (ChatServer*)arg;
       while(1)
       {
-        //cout << "deal_start" << endl;
+        string msg;
+        cs->_recv_que->Pop(&msg);
+        cout << "work_thread deal msg: " << msg << " from _recv_que" << endl;
         sleep(1);
       }
     }
