@@ -1,6 +1,7 @@
 #pragma once 
 #include "MsgQueue.hpp"
 #include "UserManager.hpp"
+#include "ChatMsg.hpp"
 #include <unistd.h>
 #include <sys/epoll.h>
 #include <sys/socket.h>
@@ -77,12 +78,12 @@ class ChatServer
         return -4;
       }
       //3.两个队列的初始化
-      _recv_que = new MsgQueue<string>();
+      _recv_que = new MsgQueue<ChatMsg>();
       if(_recv_que == nullptr)
       {
         return -5;
       }
-      _send_que = new MsgQueue<string>();
+      _send_que = new MsgQueue<ChatMsg>();
       if(_send_que == nullptr)
       {
         return -6;
@@ -101,13 +102,13 @@ class ChatServer
       //启动各类线程
       //1.接受线程
       pthread_t tid;
-      int ret = pthread_create(&tid, NULL, recv_msg_start, this);
+      int ret = pthread_create(&tid, NULL, recv_msg_start, (void*)this);
       if(ret < 0)
       {
         return -1;
       }
       //2.发送线程
-      ret = pthread_create(&tid, NULL, send_msg_start, NULL);
+      ret = pthread_create(&tid, NULL, send_msg_start, (void*)this);
       if(ret < 0)
       {
         return -2;
@@ -189,8 +190,11 @@ class ChatServer
             }
             else 
             {
-              cout << "recv_msg_start recv msg: " << buf << " from newsockfd is" << arr[i].data.fd << endl;
-              cs->_recv_que->Push(buf);
+              cout << "recv_msg_start recv msg: " << buf << " from newsockfd is " << arr[i].data.fd << endl;
+              ChatMsg cm;
+              cm.PraseChatMsg(buf);
+              cm._sockfd = arr[i].data.fd;
+              cs->_recv_que->Push(cm);
             }
           }
         }
@@ -200,10 +204,15 @@ class ChatServer
     
     static void* send_msg_start(void* arg)
     {
+      pthread_detach(pthread_self());
+      ChatServer* cs = (ChatServer*)arg;
       while(1)
       {
-        //cout << "send_msg_start" << endl;
-        sleep(1);
+        ChatMsg cm;
+        cs->_send_que->Pop(&cm); 
+        string msg;
+        cm.GetMsg(&msg);
+        send(cm._sockfd, msg.c_str(), msg.size(), 0);
       }
     }
 
@@ -213,10 +222,18 @@ class ChatServer
       ChatServer* cs = (ChatServer*)arg;
       while(1)
       {
-        string msg;
-        cs->_recv_que->Pop(&msg);
-        cout << "work_thread deal msg: " << msg << " from _recv_que" << endl;
-        sleep(1);
+        //1.从队列中获取消息类型为ChatMsg的消息
+        ChatMsg cm;
+        cs->_recv_que->Pop(&cm);
+        //2.根据不同的消息类型，分清处理
+        int msg_type = cm._msg_type;
+        switch(msg_type)
+        {
+          case Register:
+            break;
+          case Login:
+            break;
+        }
       }
     }
   private:
@@ -227,9 +244,9 @@ class ChatServer
     //工作线程个数
     int _work_thread_count;
     //接受队列
-    MsgQueue<string>* _recv_que;
+    MsgQueue<ChatMsg>* _recv_que;
     //发送队列
-    MsgQueue<string>* _send_que;
+    MsgQueue<ChatMsg>* _send_que;
     //epoll的操作句柄
     int _epoll_fd;
     //用户管理模块

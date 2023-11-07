@@ -1,2 +1,2 @@
 demo:client.cpp
-	g++ $^ -o $@
+	g++ $^ -o $@ -ljsoncpp
