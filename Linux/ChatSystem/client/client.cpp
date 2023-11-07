@@ -1,3 +1,4 @@
+#include "ChatMsg.hpp"
 #include <iostream>
 #include <unistd.h>
 #include <string.h>
@@ -29,11 +30,13 @@ int main()
   }
   while(1)
   {
+    ChatMsg cm;
+    cm._msg_type = Register;
+    cm._json_msg["nickname"] = "cqx";
+    string msg;
+    cm.GetMsg(&msg);
+    send(sockfd, msg.c_str(), msg.size(), 0);
     char buf[1024] = {0};
-    std::cout << "please enter your msg:  ";
-    fflush(stdout);
-    std::cin >> buf;
-    send(sockfd, buf, strlen(buf), 0);
     memset(buf, '\0', 1024);
     ssize_t recv_size = recv(sockfd, buf, sizeof(buf) - 1, 0);
     if(recv_size < 0)
@@ -49,7 +52,12 @@ int main()
     }
     else 
     {
-      printf("[buf is]: %s\n", buf); 
+      ChatMsg rcvms;
+      rcvms.PraseChatMsg(buf);
+      cout << buf << endl;
+      //cout << rcvms._msg_type << endl;
+      //cout << rcvms._reply_statu<< endl;
+      //cout << rcvms._user_id<< endl;
     }
   }
   close(sockfd);

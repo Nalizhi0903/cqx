@@ -1,9 +1,24 @@
 #include "DataBaseServer.hpp"
 #include "UserManager.hpp"
 #include "ChatServer.hpp"
-
+#include "ChatMsg.hpp"
 int main()
 {
+
+  //ChatMsg cm;
+  //cm._msg_type = Register;
+  //cm._sockfd = 5;
+  //cm._user_id = -1;
+  //cm._reply_statu= -1;
+  //cm._json_msg["nickname"] = "cqx";
+  //cm._json_msg["school"] = "bite";
+  //cm._json_msg["passwd"] = "903602";
+  //std::string msg;
+  //cm.GetMsg(&msg);
+
+  //std::cout << msg << std::endl;
+
+  
   ChatServer cs;
   int ret = cs.InitChatServer();
   if(ret < 0)
@@ -20,6 +35,7 @@ int main()
     return 0;
   }
   return 0;
+  
   //UserManager user;
   //user.InitUserManager();
   //线程安全队列
