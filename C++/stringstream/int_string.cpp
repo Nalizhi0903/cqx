@@ -18,6 +18,7 @@ int main()
     ss << n;
     string str_int;
     ss >> str_int;
+    cout << ss.str() << endl;
     ss.clear();
     cout << ss.str() << endl;//clear并没有把底层string清空，可以使用s.str("")将底层的string对象
     ss.str("");
