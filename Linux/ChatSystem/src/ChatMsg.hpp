@@ -107,13 +107,18 @@ class ChatMsg
       Json::Value tmp;
       JsonUtil::UnSerialize(msg, &tmp);
 
+<<<<<<< HEAD
       _msg_type = tmp["msg_type"].asInt();
+=======
+      _msg_type = tmp["chat msg_type"].asInt();
+>>>>>>> ae694aced12244a1ab85a9458c869ce47fe74f91
       _user_id = tmp["user_id"].asInt();
       _reply_statu = tmp["reply_statu"].asInt();
       _json_msg = tmp["json_msg"];
       return true;
     }
 
+<<<<<<< HEAD
     std::string GetValue(const std::string& key)
     {
       if(!_json_msg.isMember(key))
@@ -131,6 +136,8 @@ class ChatMsg
       _json_msg.clear();
     }
 
+=======
+>>>>>>> ae694aced12244a1ab85a9458c869ce47fe74f91
   public:
     int _msg_type;
     //存放客户端的文件描述符，方便发送线程获取，发送数据
@@ -142,6 +149,7 @@ class ChatMsg
     //根据消息类型的不同，json_value的数据不一样
     Json::Value _json_msg;
 };
+<<<<<<< HEAD
 /*    双方约定的消息内容
  *     Register:
  *      msg_type:Register 
@@ -176,3 +184,5 @@ class ChatMsg
  *
  *
  */
+=======
+>>>>>>> ae694aced12244a1ab85a9458c869ce47fe74f91

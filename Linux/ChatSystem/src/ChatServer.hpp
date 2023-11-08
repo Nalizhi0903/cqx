@@ -7,6 +7,10 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+<<<<<<< HEAD
+=======
+
+>>>>>>> ae694aced12244a1ab85a9458c869ce47fe74f91
 /*
  *网络的搭建
  *  侦听套接字的创建
@@ -29,8 +33,12 @@ class ChatServer
 {
   public:
     ChatServer():_tcp_listen_sockfd(-1), _tcp_port(TCP_PORT), _work_thread_count(THREAD_COUNT), _um(nullptr)
+<<<<<<< HEAD
     {
     }
+=======
+    {}
+>>>>>>> ae694aced12244a1ab85a9458c869ce47fe74f91
     ~ChatServer()
     {
       if(_recv_que != NULL)
@@ -94,11 +102,14 @@ class ChatServer
       {
         return -7;
       }
+<<<<<<< HEAD
       if(_um->InitUserManager() == false)
       {
         return -8;
       }
 
+=======
+>>>>>>> ae694aced12244a1ab85a9458c869ce47fe74f91
       return 0;
     }
 
@@ -235,14 +246,20 @@ class ChatServer
         switch(msg_type)
         {
           case Register:
+<<<<<<< HEAD
             cs->DealRegister(cm);
             break;
           case Login:
             cs->DealLogin(cm);
+=======
+            break;
+          case Login:
+>>>>>>> ae694aced12244a1ab85a9458c869ce47fe74f91
             break;
         }
       }
     }
+<<<<<<< HEAD
     
     void DealRegister(ChatMsg& cm)
     {
@@ -292,6 +309,8 @@ class ChatServer
       _send_que->Push(cm);
     }
 
+=======
+>>>>>>> ae694aced12244a1ab85a9458c869ce47fe74f91
   private:
     //监听套接字
     int _tcp_listen_sockfd;

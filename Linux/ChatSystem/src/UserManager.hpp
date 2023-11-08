@@ -128,7 +128,10 @@ class UserManager
       _lock.lock();
       UserInfo ui(nickname, school, telnum, passwd, _pre_id);
       _user_map[ui._userid] = ui;
+<<<<<<< HEAD
       *userid = _pre_id;
+=======
+>>>>>>> ae694aced12244a1ab85a9458c869ce47fe74f91
       _pre_id++;
       _lock.unlock();
       //4.插入用户信息到数据库
