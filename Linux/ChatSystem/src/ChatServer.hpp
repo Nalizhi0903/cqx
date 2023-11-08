@@ -7,7 +7,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
 /*
  *网络的搭建
  *  侦听套接字的创建
@@ -30,7 +29,8 @@ class ChatServer
 {
   public:
     ChatServer():_tcp_listen_sockfd(-1), _tcp_port(TCP_PORT), _work_thread_count(THREAD_COUNT), _um(nullptr)
-    {}
+    {
+    }
     ~ChatServer()
     {
       if(_recv_que != NULL)
@@ -94,6 +94,11 @@ class ChatServer
       {
         return -7;
       }
+      if(_um->InitUserManager() == false)
+      {
+        return -8;
+      }
+
       return 0;
     }
 
@@ -230,12 +235,63 @@ class ChatServer
         switch(msg_type)
         {
           case Register:
+            cs->DealRegister(cm);
             break;
           case Login:
+            cs->DealLogin(cm);
             break;
         }
       }
     }
+    
+    void DealRegister(ChatMsg& cm)
+    {
+      //1.get register info
+      std::string nickname = cm.GetValue("nickname");
+      std::string school = cm.GetValue("school");
+      std::string telnum = cm.GetValue("telnum");
+      std::string passwd = cm.GetValue("passwd");
+      int user_id = -1;
+      //2.call UserManager register function
+      int ret = _um->DealRegister(nickname, school, telnum, passwd, &user_id);
+      //3.回复响应
+      cm.Clear();
+      cm._msg_type = Register_Resp;
+      if(ret < 0)
+      {
+        cm._reply_statu = REGISTER_FAILED;
+      }
+      else
+      {
+        cm._reply_statu = REGISTER_SUCCESS;
+      }
+      cm._user_id = user_id;
+      _send_que->Push(cm);
+    }
+
+    void DealLogin(ChatMsg& cm)
+    {
+      //1.获取登入信息
+      std::string telnum = cm.GetValue("telnum");
+      std::string passwd = cm.GetValue("passwd");
+      //2.调用用户管理模块的登入函数
+      int ret = _um->DealLogin(telnum, passwd, cm._sockfd);
+      //3.回复应答
+      cm.Clear();
+      cm._msg_type = Login_Resp;
+      if(ret < 0)
+      {
+        cm._reply_statu = LOGIN_FAILED;  
+      }
+      else 
+      {
+        cm._reply_statu = LOGIN_SUCCESS;
+      }
+      cm._user_id = ret;
+
+      _send_que->Push(cm);
+    }
+
   private:
     //监听套接字
     int _tcp_listen_sockfd;

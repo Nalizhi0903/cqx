@@ -28,11 +28,20 @@ int main()
     perror("connect");
     return 0;
   }
-  while(1)
+  //while(1)
   {
     ChatMsg cm;
+    /*注册
     cm._msg_type = Register;
-    cm._json_msg["nickname"] = "cqx";
+    cm._json_msg["nickname"] = "aa";
+    cm._json_msg["school"] = "bite";
+    cm._json_msg["telnum"] = "1963716321";
+    cm._json_msg["passwd"] = "717273";
+    */
+    /*登入*/
+    cm._msg_type = Login;
+    cm._json_msg["telnum"] = "13672678168";
+    cm._json_msg["passwd"] = "cqxctz123";
     string msg;
     cm.GetMsg(&msg);
     send(sockfd, msg.c_str(), msg.size(), 0);
@@ -54,10 +63,15 @@ int main()
     {
       ChatMsg rcvms;
       rcvms.PraseChatMsg(buf);
+      if(rcvms._reply_statu == LOGIN_SUCCESS)
+      {
+        cout << "登入成功" << endl;
+      }
+      else 
+      {
+        cout << "登入失败" << endl;
+      }
       cout << buf << endl;
-      //cout << rcvms._msg_type << endl;
-      //cout << rcvms._reply_statu<< endl;
-      //cout << rcvms._user_id<< endl;
     }
   }
   close(sockfd);

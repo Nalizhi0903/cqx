@@ -107,11 +107,28 @@ class ChatMsg
       Json::Value tmp;
       JsonUtil::UnSerialize(msg, &tmp);
 
-      _msg_type = tmp["chat msg_type"].asInt();
+      _msg_type = tmp["msg_type"].asInt();
       _user_id = tmp["user_id"].asInt();
       _reply_statu = tmp["reply_statu"].asInt();
       _json_msg = tmp["json_msg"];
       return true;
+    }
+
+    std::string GetValue(const std::string& key)
+    {
+      if(!_json_msg.isMember(key))
+      {
+        return "";
+      }
+      return _json_msg[key].asString();
+    }
+
+    void Clear()
+    {
+      _msg_type = -1;
+      _user_id = -1;
+      _reply_statu = -1;
+      _json_msg.clear();
     }
 
   public:
@@ -125,3 +142,37 @@ class ChatMsg
     //根据消息类型的不同，json_value的数据不一样
     Json::Value _json_msg;
 };
+/*    双方约定的消息内容
+ *     Register:
+ *      msg_type:Register 
+ *      sockfd: (消息到达服务端之后， 由服务端接收之后， 再打上sockfd)
+ *      json_msg:
+ *      { 
+ *        nickname: xxx
+ *        scholl: xxx
+ *        telnum: xxx 
+ *        passwd: xxx
+ *      }
+ *
+ *      Register_Resp：
+ *        msg_type: Register_Resp 
+ *        sockfd: 可以不要（因为这个sockfd，是服务端为客户端产生的线连接套接字，客户端没用，可以不用知道
+ *        reply_statu: REGISTER_SUCCESS / REGISTER_FAILED 
+ *        如果是REGISTER_SUCCESS: 应该打上user_id
+ *        如果是REGISTER_FAILED: 不用打上user_id
+ *
+ *      Login:
+ *        msg_typ = Login 
+ *        sockfd:(消息到达服务端后有服务端接收后打上sockfd)
+ *        json_msg: 
+ *        {
+ *          telnum:xxx
+ *          passwd: xxx
+ *        }
+ *      Login_Resp:
+ *        msg_type: Login_Resp 
+ *        reply_statu: LOGIN_SUCCESS / LOGIN_FAILED 
+ *          如果登入成功：返回user_id
+ *
+ *
+ */
