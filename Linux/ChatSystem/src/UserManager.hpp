@@ -215,6 +215,19 @@ class UserManager
       _dbs->InsertFriend(user_id2, user_id1);
     }
 
+    int GetFriend(int userid, std::vector<int>* vt)
+    {
+      _lock.lock();
+      auto iter = _user_map.find(userid);
+      if(iter == _user_map.end())
+      {
+        _lock.unlock();
+        return -1;
+      }
+      *vt = iter->second._friend_list;
+      return 0;
+    }
+
   private:
     //key(int):用户id
     //value(UserInfo):用户信息类

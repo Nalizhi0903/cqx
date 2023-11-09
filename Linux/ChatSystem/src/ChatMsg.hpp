@@ -18,7 +18,9 @@ enum chat_msg_type
   SendMsg,//发送消息
   SendMsg_Resp,//发送消息应答
   PushMsg,//推送数据
-  PushMsg_Resp//推送数据应答
+  PushMsg_Resp,//推送数据应答
+  GetFriend,//获取好友信息请求
+  GetFriend_Resp//获取好友信息的应答
 };
 
 enum reply_statu
@@ -30,7 +32,9 @@ enum reply_statu
   ADDFRIEND_SUCCESS,
   ADDFRIEND_FAILED,
   SENDMSG_SUCCESS,
-  SENDMSG_FAILED
+  SENDMSG_FAILED,
+  GETFRIEND_SUCCESS,
+  GETFRIEND_FAILED
 };
 
 class JsonUtil 
@@ -174,6 +178,17 @@ class ChatMsg
  *        msg_type: Login_Resp 
  *        reply_statu: LOGIN_SUCCESS / LOGIN_FAILED 
  *          如果登入成功：返回user_id
- *
- *
+ *      
+ *      GetFriend:
+ *        msg_type: GetFriend 
+ *        userid: 发送客户端的userid，服务器通过userid返回好友信息
+ *      
+ *      GetFriend_Resp:
+ *        msg_type: GetFriend_Resp 
+ *        reply_statu: GETFRIEND_SUCCESS / GETFRIEND_FAILED 
+ *        如果成功获得：
+ *          json_msg:
+ *          {
+ *            好友信息
+ *          }
  */

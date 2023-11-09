@@ -239,6 +239,9 @@ class ChatServer
           case Login:
             cs->DealLogin(cm);
             break;
+          case GetFriend:
+            cs->DealGetFriend(cm);
+            break;
         }
       }
     }
@@ -290,6 +293,31 @@ class ChatServer
 
       _send_que->Push(cm);
     }
+
+   void DealGetFriend(ChatMsg& cm)
+   {
+     int userid = cm._user_id;
+     std::vector<int> vt;
+     int ret = _um->GetFriend(userid, &vt);   
+     cm.Clear();
+     cm._msg_type = GetFriend_Resp;
+     if(ret < 0)
+     {
+       cm._reply_statu = GETFRIEND_FAILED; 
+     }
+     else 
+     {
+        cm._reply_statu = GETFRIEND_SUCCESS;
+     }
+     for(int i = 0; i < (int)vt.size(); i++)
+     {
+        Json::Value tmp;
+        tmp["userid"] = vt[i];
+        cm._json_msg.append(tmp);
+     }
+
+     _send_que->Push(cm);
+   }
 
   private:
     //监听套接字
