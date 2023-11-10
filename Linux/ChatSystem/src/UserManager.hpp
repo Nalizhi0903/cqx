@@ -24,7 +24,7 @@ class UserInfo
     {}
     ~UserInfo()
     {}
-  private:
+  public:
     string _nickname;
     string _school;
     string _telnum;
@@ -224,10 +224,25 @@ class UserManager
         _lock.unlock();
         return -1;
       }
+      _lock.unlock();
       *vt = iter->second._friend_list;
       return 0;
     }
 
+    int GetUserInfo(int userid, UserInfo* ui)
+    {
+      _lock.lock();
+      auto iter = _user_map.find(userid);
+      if(iter == _user_map.end())
+      {
+        _lock.unlock();
+        return -1;
+      }
+      *ui = iter->second;
+      _lock.unlock();
+      return 0;
+    }
+    
   private:
     //key(int):用户id
     //value(UserInfo):用户信息类

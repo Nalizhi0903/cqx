@@ -216,6 +216,7 @@ class ChatServer
         cs->_send_que->Pop(&cm); 
         string msg;
         cm.GetMsg(&msg);
+        cout << "send_msg_start send msg: " << msg<< endl;
         send(cm._sockfd, msg.c_str(), msg.size(), 0);
       }
     }
@@ -242,6 +243,8 @@ class ChatServer
           case GetFriend:
             cs->DealGetFriend(cm);
             break;
+          case SendMsg:
+            cs->DealSendMsg(cm);
         }
       }
     }
@@ -303,7 +306,7 @@ class ChatServer
      cm._msg_type = GetFriend_Resp;
      if(ret < 0)
      {
-       cm._reply_statu = GETFRIEND_FAILED; 
+        cm._reply_statu = GETFRIEND_FAILED; 
      }
      else 
      {
@@ -311,12 +314,64 @@ class ChatServer
      }
      for(int i = 0; i < (int)vt.size(); i++)
      {
+        UserInfo ui;
+        _um->GetUserInfo(vt[i], &ui);
         Json::Value tmp;
+        tmp["nickname"] = ui._nickname;
+        tmp["school"] = ui._school;
         tmp["userid"] = vt[i];
+        tmp["userstatus"] = ui._user_status;
         cm._json_msg.append(tmp);
      }
-
      _send_que->Push(cm);
+   }
+
+   void DealSendMsg(ChatMsg& cm)
+   {
+      //1.获取发送者id， 接收者id
+      int send_id = cm._user_id;
+      int recv_id = cm._json_msg["recvid"].asInt();
+      std::string send_msg = cm._json_msg["msg"].asString();
+      //2.判断接收者是否是合法用户
+      UserInfo ui;
+      int ret = _um->GetUserInfo(recv_id, &ui);
+      cm.Clear();
+      cm._msg_type = SendMsg_Resp;
+      //3.给发送者回复应答
+      if(ret < 0)
+      {
+        //不是合法用户
+        cm._reply_statu = SENDMSG_FAILED;
+        _send_que->Push(cm);
+        return;
+      }
+      else 
+      {
+        if(ui._user_status == OFFLINE)
+        {
+          //用户不在线
+          cm._reply_statu = SENDMSG_FAILED;
+          _send_que->Push(cm);
+          return;
+        }
+        else 
+        {
+          //用户在线
+          cm._reply_statu = SENDMSG_SUCCESS;
+          _send_que->Push(cm);
+        }
+      }
+      //4.给接收者推送消息
+      UserInfo send_ui;
+      _um->GetUserInfo(send_id, &send_ui);
+      cm.Clear();
+      cm._msg_type = PushMsg;
+      cm._sockfd = ui._tcp_socket;
+      cm._json_msg["peer_nickname"] = send_ui._nickname;
+      cm._json_msg["peer_school"] = send_ui._school;
+      cm._json_msg["peer_userid"] = send_ui._userid;
+      cm._json_msg["peer_msg"] = send_msg;
+      _send_que->Push(cm);
    }
 
   private:

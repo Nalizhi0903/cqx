@@ -191,4 +191,18 @@ class ChatMsg
  *          {
  *            好友信息
  *          }
+ *
+ *      SendMsg:
+ *        msg_type:     SendMsg 
+ *        userid:       消息发送者的ID
+ *        json_msg:
+ *          msg:        要发送的内容
+ *          recvid:     将消息接收的id
+ *
+ *      SendMsg_Resp:
+ *        msg_type:     SendMsg_Resp 
+ *        reply_statu:  SENDMSG_SUCCESS / SENDMSG_FAILED 
+ *      
+ *
+ *
  */
