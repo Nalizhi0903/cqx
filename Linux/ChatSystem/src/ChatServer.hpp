@@ -245,6 +245,13 @@ class ChatServer
             break;
           case SendMsg:
             cs->DealSendMsg(cm);
+            break;
+          case AddFriend:
+            cs->DealAddFriend(cm);
+            break;
+          case PushAddFriendMsg_Resp:
+            cs->DealPushAddFriendResp(cm);
+            break;
         }
       }
     }
@@ -373,6 +380,73 @@ class ChatServer
       cm._json_msg["peer_msg"] = send_msg;
       _send_que->Push(cm);
    }
+
+   void DealAddFriend(ChatMsg& cm)
+   {
+      int userid = cm._user_id;
+      std::string str = cm._json_msg["friendtelnum"].asString();   
+      UserInfo ui;
+      int ret =_um->GetUserInfo(str, &ui);
+      cm.Clear();
+      if(ret < 0)
+      {
+        //不是注册用户
+        cm._msg_type = AddFriend_Resp;
+        cm._reply_statu = ADDFRIEND_FAILED;
+        cm._json_msg["content"] = "User do not exist";
+        _send_que->Push(cm);
+        return;
+      }
+      ret = _um->IsLogin(ui._userid);
+      if(ret < 0)
+      {
+        //用户不在线
+        cm._msg_type = AddFriend_Resp;
+        cm._reply_statu = ADDFRIEND_FAILED;
+        cm._json_msg["content"] = "User is not online";
+        _send_que->Push(cm);
+        return;
+      }
+      //给添加方推送添加好友请求
+      UserInfo r_ui;
+      _um->GetUserInfo(userid, &r_ui);
+      cm._user_id = ui._userid; 
+      cm._sockfd = ui._tcp_socket;
+      cm._msg_type = PushAddFriendMsg;
+      cm._json_msg["nickname"] = r_ui._nickname;
+      cm._json_msg["school"] = r_ui._school;
+      cm._json_msg["userid"] = r_ui._userid;
+      _send_que->Push(cm);
+   }
+
+    void DealPushAddFriendResp(ChatMsg& cm)
+    {
+      int a_user_id = cm._json_msg["addruserid"].asInt();
+      int b_user_id = cm._user_id;
+      int reply_statu = cm._reply_statu;
+      cm.Clear();
+      cm._msg_type = PushAddFriendMsg_Resp;
+      UserInfo ui;
+      UserInfo a_ui;
+      _um->GetUserInfo(a_user_id, &a_ui);
+      _um->GetUserInfo(b_user_id, &ui);
+      cm._sockfd = a_ui._tcp_socket;
+      if(reply_statu == ADDFRIEND_FAILED)
+      {
+        cm._reply_statu = ADDFRIEND_FAILED;
+        cm._json_msg["content"] = "add user disagree";
+      }
+      else 
+      {
+        cm._reply_statu = ADDFRIEND_SUCCESS;
+        cm._json_msg["peer_nickname"] = ui._nickname;
+        cm._json_msg["peer_school"] = ui._school;
+        cm._json_msg["peer_userid"] = ui._userid;
+        cm._json_msg["content"] = ui._nickname + "add user agree";
+        _um->SetFriend(a_user_id, b_user_id);
+      }
+      _send_que->Push(cm);
+    }
 
   private:
     //监听套接字

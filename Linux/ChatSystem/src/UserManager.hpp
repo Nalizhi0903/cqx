@@ -243,6 +243,28 @@ class UserManager
       return 0;
     }
     
+    int GetUserInfo(string& telnum, UserInfo* ui)
+    {
+      _lock.lock();
+      auto iter = _user_map.begin();
+      while(iter != _user_map.end())
+      {
+        if(iter->second._telnum == telnum)
+        {
+          break;
+        }
+        iter++;
+      }
+      if(iter == _user_map.end())
+      {
+        _lock.unlock();
+        return -1;
+      }
+      *ui = iter->second;
+      _lock.unlock();
+      return 0;
+    }
+
   private:
     //key(int):用户id
     //value(UserInfo):用户信息类
