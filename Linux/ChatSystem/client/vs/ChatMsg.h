@@ -12,7 +12,7 @@ enum chat_msg_type
 	Login,//登入
 	Login_Resp,//登入应答
 	AddFriend,//添加好友
-	ADDFriend_Resp,//添加好友应答 5
+	AddFriend_Resp,//添加好友应答 5
 	PushAddFriendMsg,//推送好友请求
 	PushAddFriendMsg_Resp,//推送添加好友应答
 	SendMsg,//发送消息

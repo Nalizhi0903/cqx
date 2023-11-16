@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include "ChatSystem88.h"
+#include "AddFriend.h"
 #include "CChatDialog.h"
 #include "afxdialogex.h"
 #include "ChatMsg.h"
@@ -51,6 +52,8 @@ END_MESSAGE_MAP()
 void CChatDialog::OnBnClickedButton1()
 {
 	// TODO: 在此添加控件通知处理程序代码
+	class AddFriend adf(_user_id);
+	adf.DoModal();
 }
 
 void CChatDialog::ReFreshUserList()
@@ -120,6 +123,94 @@ void DealMsg(CChatDialog* cc)
 	}
 }
 
+void DealPushAddFriendMsg(CChatDialog* cc)
+{
+	MsgQueue* mq = MsgQueue::GetInstance();
+	if (mq == nullptr)
+	{
+		MessageBox(cc->m_hWnd, TEXT("内部有错，请联系开发人员"), "error", MB_OK);
+		return;
+	}
+	TcpSvr* ts = TcpSvr::GetInstance();
+	if (ts == nullptr)
+	{
+		MessageBox(cc->m_hWnd, TEXT("内部有错，请联系开发人员"), "error", MB_OK);
+		return;
+	}
+	while (1)
+	{
+		std::string msg;
+		mq->Pop(PushAddFriendMsg, &msg);
+		//3.解析消息
+		ChatMsg cm;
+		cm.PraseChatMsg(msg);
+		std::string addr_nickname = cm._json_msg["nickname"].asString();
+		std::string addr_school = cm._json_msg["school"].asString();
+		int addr_userid = cm._json_msg["userid"].asInt();
+		std::string show_msg = addr_school + " - " + addr_nickname + "want to add you as friend";
+		int choice = MessageBox(cc->m_hWnd, TEXT(show_msg.c_str()), "添加好友请求", MB_YESNO);
+		cm.Clear();
+		cm._msg_type = PushAddFriendMsg_Resp;
+		cm._user_id = cc->_user_id;
+		cm._json_msg["addruserid"] = addr_userid;
+		if (choice == IDYES)
+		{
+			cm._reply_statu = ADDFRIEND_SUCCESS;
+			struct UserInfo ui;
+			ui.nickname = addr_nickname;
+			ui.school = addr_school;
+			ui.user_id = addr_userid;
+			ui.msg_count = 0;
+			ui._history_msg.clear();
+			cc->_friend_vec.push_back(ui);
+			cc->ReFreshUserList();
+		}
+		else
+		{
+			cm._reply_statu = ADDFRIEND_FAILED;
+		}
+		msg.clear();
+		cm.GetMsg(&msg);
+		ts->Send(msg);
+	}
+}
+
+void DealPushAddFriendMsgReps(CChatDialog* cc)
+{
+	MsgQueue* mq = MsgQueue::GetInstance();
+	if (mq == nullptr)
+	{
+		MessageBox(cc->m_hWnd, TEXT("内部有错，请联系开发人员"), "error", MB_OK);
+		return;
+	}
+	while (1)
+	{
+		std::string msg;
+		mq->Pop(PushAddFriendMsg_Resp, &msg);
+		//3.解析消息
+		ChatMsg cm;
+		cm.PraseChatMsg(msg);
+		std::string peer_nickname = cm._json_msg["peer_nickname"].asString();
+		std::string peer_school = cm._json_msg["peer_school"].asString();
+		std::string content = cm._json_msg["content"].asString();
+		int reply_status = cm._reply_statu;
+		int peer_userid = cm._json_msg["peer_userid"].asInt();
+		MessageBox(cc->m_hWnd, TEXT(content.c_str()), "添加结果", MB_OK);
+		if (cm._reply_statu == ADDFRIEND_FAILED)
+		{
+			continue;
+		}
+		struct UserInfo ui;
+		ui.nickname = peer_nickname;
+		ui.school = peer_school;
+		ui.user_id = peer_userid;
+		ui.msg_count = 0;
+		ui._history_msg.clear();
+		cc->_friend_vec.push_back(ui);
+		cc->ReFreshUserList();
+	}
+}
+
 BOOL CChatDialog::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
@@ -129,6 +220,12 @@ BOOL CChatDialog::OnInitDialog()
 	//创建线程，接受其他客户端发送的消息
 	std::thread recv_msg(DealMsg, this);
 	recv_msg.detach();
+
+	std::thread deal_AddFriend_msg(DealPushAddFriendMsg, this);
+	deal_AddFriend_msg.detach();
+
+	std::thread deal_AddFriend_Reps_msg(DealPushAddFriendMsgReps, this);
+	deal_AddFriend_Reps_msg.detach();
 	//组织登入信息
 	ChatMsg cm;
 	cm._msg_type = GetFriend;
