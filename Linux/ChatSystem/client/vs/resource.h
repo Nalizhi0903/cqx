@@ -10,6 +10,7 @@
 #define IDR_MAINFRAME                   128
 #define IDD_REGISTER                    132
 #define IDD_CHATDIALOG                  134
+#define IDD_ADDFRIENDDIALOG             136
 #define IDC_PASSWD                      1007
 #define IDC_TELNUM                      1008
 #define IDC_BUTTON4                     1009
@@ -25,14 +26,15 @@
 #define IDC_INPUT                       1020
 #define IDC_BUTTON2                     1021
 #define IDC_COMMIT                      1021
+#define IDC_ADDFRIENDBUTTON             1022
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        136
+#define _APS_NEXT_RESOURCE_VALUE        138
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1022
+#define _APS_NEXT_CONTROL_VALUE         1023
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
