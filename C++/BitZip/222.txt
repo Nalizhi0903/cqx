@@ -1,0 +1,38 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include "FileCompressHuffman.hpp"
+#include "Common.h"
+#include <iostream>
+using namespace std;
+FileComprssHuffman::FileComprssHuffman()
+{
+	_fileinfo.resize(256);
+	for (int i = 0; i < 256; i++)
+	{
+		_fileinfo[i]._ch = i;
+	}
+}
+
+void FileComprssHuffman::CompressFile(const string& FilePath)
+{
+	//1.统计源文件中每个字符出现的次数
+	FILE* fIn = fopen(FilePath.c_str(), "rb");
+	if (fIn == nullptr)
+	{
+		cout << "待压缩文件不存在" << endl;
+		return;
+	}
+	uch rdBuff[1024];
+	while (true)
+	{
+		size_t rd_size = fread(rdBuff, 1, 1024, fIn);
+		if (rd_size == 0)
+		{
+			break;
+		}
+
+		for (size_t i = 0; i < rd_size; i++)
+		{
+			_fileinfo[rdBuff[i]]._appearCount++;
+		}
+	}
+	//用统计结果创建Huffman树

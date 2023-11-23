@@ -5,11 +5,50 @@
 *	3.获取每个字节的Huffman编码
 *	4.用得到的编码对源文件中的每个字节进行改写
 */
-#include "HuffmanTree.hpp"
 
+#include "HuffmanTree.hpp"
+#include "FileCompressHuffman.hpp"
+#include <iostream>
+
+bool isQuit = false;
+
+void menu()
+{
+	std::cout << "Huffman压缩软件" << std::endl;
+	std::cout << "1.压缩" << std::endl;
+	std::cout << "2.解压缩" << std::endl;
+	std::cout << "0.退出" << std::endl;
+	FileComprssHuffman fc;
+	std::string filename;
+	int select = 0;
+	std::cin >> select;
+	switch (select)
+	{
+	case 0:
+		isQuit = true;
+		break;
+	case 1:
+		std::cout << "请输入压缩的文件名称" << std::endl;
+		cin >> filename;
+		fc.CompressFile(filename);
+		break;
+	case 2:
+		std::cout << "请输入解压缩的文件名称" << std::endl;
+		cin >> filename;
+		fc.UnCompressFile(filename);
+		break;
+	}
+}
 int main()
 {
-	std::vector<int> vt = { 3,1,5,7 };
-	HuffmanTree<int>h(vt);
+	while (true)
+	{
+		menu();
+		if (isQuit == true)
+		{
+			std::cout << "bye" << std::endl;
+			break;
+		}
+	}
 }
 
