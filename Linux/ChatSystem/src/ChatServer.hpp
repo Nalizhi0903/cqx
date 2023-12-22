@@ -54,6 +54,8 @@ class ChatServer
         return -1;
       }
       //端口复用
+      //（1）防止服务器重启时之前绑定的端口还未释放；
+      //（2）程序突然退出而系统没有释放端口；
       int opt = 1;
       setsockopt(_tcp_listen_sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 

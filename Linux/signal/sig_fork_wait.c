@@ -20,7 +20,7 @@ int main()
     }
     else if(pid == 0)
     {
-        sleep(10);
+        sleep(5);
         exit(1);
     }
     else
